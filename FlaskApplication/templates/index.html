@@ -1,0 +1,124 @@
+{% extends "import.html" %}
+{% block content %}
+
+<!-- Page Wrapper -->
+<!--<div class="min-h-screen bg-gradient-to-br from-indigo-100 via-white to-purple-100 px-4 py-12 font-[Poppins] flex items-start justify-center">-->
+  <div class="min-h-screen bg-gradient-to-br from-indigo-100 via-white to-purple-100 px-4 py-12 font-[Poppins] flex items-center justify-center">
+
+
+  <!-- Container -->
+  <div class="w-full max-w-6xl grid lg:grid-cols-2 gap-10 bg-white/70 backdrop-blur-lg p-10 rounded-3xl shadow-2xl border border-indigo-200">
+
+    <!-- Left Panel: Title and Upload -->
+<div class="flex flex-col justify-center items-center lg:items-center h-full space-y-6 text-center">
+
+      <!-- Heading -->
+      <h2 class="text-3xl font-bold text-center">
+        <span class="bg-gradient-to-r from-blue-600 to-sky-500 bg-clip-text text-transparent">Pneumonia Detection</span><br>
+        <span class="text-gray-700 text-xl font-semibold">Using Deep Learning</span>
+      </h2>
+
+      <!-- Upload Form -->
+<form id="upload-file" method="post" enctype="multipart/form-data" class="flex flex-col items-center space-y-4 w-full text-center">
+  <label for="imageUpload"
+    class="cursor-pointer flex items-center gap-3 px-5 py-2 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 transition duration-300 w-fit">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2">
+      <path d="M3 5a2 2 0 012-2h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5z" />
+      <path d="M15 10l4 6H5l6-8 4 5z" />
+    </svg>
+    Upload Image
+  </label>
+  <input type="file" name="file" id="imageUpload" accept=".png, .jpg, .jpeg" class="hidden" onchange="showPreview(this)">
+  <p id="file-name" class="text-sm text-gray-700 font-medium"></p>
+
+</form>
+
+      <!-- Loader -->
+      <div id="loader" class="hidden flex justify-center mt-4">
+        <div class="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    </div>
+
+    <!-- Right Panel: Image & Result -->
+    <div class="flex flex-col items-center space-y-8 image-section hidden animate-fadeIn">
+
+      <!-- Image Preview -->
+      <div class="flex flex-col items-center space-y-4">
+        <img id="imagePreview" class="rounded-xl shadow-xl border-4 border-indigo-300 w-[300px] h-[300px]" />
+        <button type="button" id="btn-predict"
+          class="px-6 py-3 bg-green-600 text-white font-semibold rounded-xl shadow-md hover:bg-green-700 transition transform hover:scale-105 duration-300">
+          Predict!
+        </button>
+      </div>
+
+      <!-- Result Display -->
+      <div id="result" class="text-center hidden animate-fadeIn bg-white/60 backdrop-blur-lg p-6 rounded-xl shadow-md w-full">
+        <h3 class="text-lg text-gray-700 font-semibold mb-2">Result:</h3>
+        <span id="result-text" class="text-2xl font-bold block"></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Tailwind Custom Animations -->
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fadeIn {
+    animation: fadeIn 0.6s ease-in-out;
+  }
+
+  #result-text.pneumonia {
+    color: #e53935;
+  }
+
+  #result-text.normal {
+    color: #2e7d32;
+  }
+</style>
+
+<!-- JavaScript -->
+<script>
+  function showPreview(input) {
+    if (input.files && input.files[0]) {
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        document.getElementById('imagePreview').src = e.target.result;
+        document.querySelector('.image-section').classList.remove("hidden");
+        document.getElementById('file-name').textContent = input.files[0].name;
+      };
+      reader.readAsDataURL(input.files[0]);
+    }
+  }
+
+  function displayResult(message) {
+    const resultText = document.getElementById("result-text");
+    const resultContainer = document.getElementById("result");
+
+    resultText.textContent = message;
+    resultText.classList.remove("pneumonia", "normal");
+
+    if (message.toLowerCase().includes("pneumonia")) {
+      resultText.classList.add("pneumonia");
+    } else if (message.toLowerCase().includes("normal")) {
+      resultText.classList.add("normal");
+    }
+
+    resultContainer.classList.remove("hidden");
+  }
+</script>
+
+{% endblock %}
