@@ -40,15 +40,60 @@ def get_className(classNo):
 #     result=model_03.predict(input_img)
 #     result01=np.argmax(result,axis=1)
 #     return result01
+# def getResult(img):
+#     image = cv2.imread(img)
+#     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+#     image = cv2.resize(image, (128, 128))
+#     image = image / 255.0  # 🔥 Important: normalize
+#     input_img = np.expand_dims(image, axis=0)
+#     result = model_03.predict(input_img)
+#     resultx = model_03.predict(input_img)[0]  # resultx = [prob_normal, prob_pneumonia]
+#     class_index = np.argmax(resultx)
+#     confidence = round(resultx[class_index] * 100, 2)
+    
+#     class_name = get_className(class_index)
+#     print(f"Class: {class_name}, Confidence: {confidence}%")
+#     result01 = np.argmax(result, axis=1)[0]
+#     print(f"Class: {result01}")
+#     return result01
+
+# def getResult(img):
+#     image = cv2.imread(img)
+#     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+#     image = cv2.resize(image, (128, 128))
+#     image = image / 255.0  # 🔥 Important: normalize
+#     input_img = np.expand_dims(image, axis=0)
+    
+#     result = model_03.predict(input_img)[0]  # result = [prob_normal, prob_pneumonia]
+#     class_index = np.argmax(result)
+#     confidence = round(result[class_index] * 100, 2)
+#     pneumonia_prob = round(float(result[1]) * 100, 2)
+#     class_name = get_className(class_index)
+#     return f"{class_name} ({pneumonia_prob}%)"
+
 def getResult(img):
     image = cv2.imread(img)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     image = cv2.resize(image, (128, 128))
-    image = image / 255.0  # 🔥 Important: normalize
+    image = image / 255.0
     input_img = np.expand_dims(image, axis=0)
     result = model_03.predict(input_img)
-    result01 = np.argmax(result, axis=1)[0]
-    return result01
+
+    pneumonia_prob = float(result[0][1])  # softmax probability for Pneumonia
+    predicted_class = np.argmax(result, axis=1)[0]
+
+    # Get severity level
+    severity_score = round(pneumonia_prob * 100, 2)
+    if severity_score < 40:
+        severity_level = "Mild"
+    elif severity_score < 70:
+        severity_level = "Moderate"
+    else:
+        severity_level = "Severe"
+
+    return predicted_class, severity_score, severity_level
+
+
 
 
 @app.route('/', methods=['GET'])
@@ -56,6 +101,18 @@ def index():
     return render_template('index.html')
 
 
+# @app.route('/predict', methods=['GET', 'POST'])
+# def upload():
+#     if request.method == 'POST':
+#         f = request.files['file']
+
+#         basepath = os.path.dirname(__file__)
+#         file_path = os.path.join(
+#             basepath, 'uploads', secure_filename(f.filename))
+#         f.save(file_path)
+#         result = getResult(file_path)
+#         return result
+#     return None
 @app.route('/predict', methods=['GET', 'POST'])
 def upload():
     if request.method == 'POST':
@@ -65,10 +122,14 @@ def upload():
         file_path = os.path.join(
             basepath, 'uploads', secure_filename(f.filename))
         f.save(file_path)
-        value=getResult(file_path)
-        result=get_className(value) 
-        return result
-    return None
+
+        class_id, severity_score, severity_level = getResult(file_path)
+        class_name = get_className(class_id)
+
+        if class_name == "Normal":
+            return f"{class_name} (Pneumonia Probability: {severity_score}%)"
+        else:
+            return f"{class_name} (Severity Score: {severity_score}%, Level: {severity_level})"
 
 
 if __name__ == '__main__':
