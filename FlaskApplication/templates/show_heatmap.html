@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Grad-CAM Heatmap</title>
+</head>
+<body>
+    <h2>Grad-CAM Visualization</h2>
+    <img src="{{ url_for('static', filename='heatmap/cam_' + filename) }}" alt="Grad-CAM Heatmap" style="max-width: 100%; height: auto;">
+    <br>
+    <a href="/">Back to Home</a>
+</body>
+</html>
