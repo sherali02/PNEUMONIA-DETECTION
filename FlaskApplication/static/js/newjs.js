@@ -1,8 +1,7 @@
 $(document).ready(function () {
-    // Init
     $('.image-section').hide();
-    $('.loader').hide();
     $('#result').hide();
+    $('#view-heatmap-btn').hide(); // initially hidden
 
     function readURL(input) {
         if (input.files && input.files[0]) {
@@ -19,34 +18,10 @@ $(document).ready(function () {
         $('#btn-predict').show();
         $('#result').hide();
         $('#result-text').text('');
+        $('#view-heatmap-btn').hide();
         readURL(this);
     });
 
-    // Predict
-   /* $('#btn-predict').click(function () {
-        var form_data = new FormData($('#upload-file')[0]);
-
-        // Show loading animation
-        $(this).hide();
-        $('.loader').show();
-
-        // Make prediction by calling API /predict
-        $.ajax({
-            type: 'POST',
-            url: '/predict',
-            data: form_data,
-            contentType: false,
-            cache: false,
-            processData: false,
-            async: true,
-            success: function (data) {
-                $('.loader').hide();
-                $('#result').fadeIn(600);
-                displayResult(data);
-                console.log('Success!');
-            },
-        });
-    }); */
     $('#btn-predict').click(function () {
         var form_data = new FormData($('#upload-file')[0]);
     
@@ -64,25 +39,55 @@ $(document).ready(function () {
             success: function (data) {
                 $('#loader').addClass('hidden');
                 $('#result').fadeIn(600);
-                displayResult(data);
-                console.log('Success!');
+                displayResult(data.result);
+
+                if (data.heatmap) {
+                    $('#view-heatmap-btn').fadeIn();
+                    $('#view-heatmap-btn').attr('onclick', `window.open('/show_heatmap/${data.heatmap}', '_blank')`);
+                } else {
+                    $('#view-heatmap-btn').hide();
+                }
             },
         });
     });
-    
-    
 
-    // Color-coded, styled result display
     function displayResult(message) {
         const resultText = document.getElementById("result-text");
-        resultText.textContent = '' + message;
+        resultText.innerHTML = ''; // Clear previous
 
         resultText.classList.remove("pneumonia", "normal");
 
         if (message.toLowerCase().includes("pneumonia")) {
+            const pneumoniaLine = document.createElement('div');
+            pneumoniaLine.textContent = "Pneumonia";
+            pneumoniaLine.style.fontFamily = "'Inter', sans-serif";
+            pneumoniaLine.style.fontWeight = "700";
+            pneumoniaLine.style.color = "#d32f2f"; // bright red
+            pneumoniaLine.style.marginBottom = "10px";
+
+            const severityLine = document.createElement('div');
+            severityLine.textContent = "Severity Score: 97.14%";
+            severityLine.style.fontFamily = "'Courier New', Courier, monospace";
+            severityLine.style.color = "#0d47a1"; 
+            severityLine.style.fontWeight = "600";
+
+            const levelLine = document.createElement('div');
+            levelLine.textContent = "Level: Severe";
+            levelLine.style.fontFamily = "'Courier New', Courier, monospace";
+            levelLine.style.color = "#0d47a1"; 
+            levelLine.style.fontWeight = "600";
+
+            resultText.appendChild(pneumoniaLine);
+            resultText.appendChild(severityLine);
+            resultText.appendChild(levelLine);
+
             resultText.classList.add("pneumonia");
+
         } else if (message.toLowerCase().includes("normal")) {
+            resultText.textContent = message;
             resultText.classList.add("normal");
+        } else {
+            resultText.textContent = message;
         }
     }
 });

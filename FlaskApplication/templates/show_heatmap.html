@@ -1,12 +1,52 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Grad-CAM Heatmap</title>
+  <meta charset="UTF-8">
+  <title>Grad-CAM Heatmap</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      font-family: 'Outfit', sans-serif;
+    }
+    .fade-in-up {
+      animation: fadeInUp 0.9s ease-out both;
+    }
+    @keyframes fadeInUp {
+      0% {
+        opacity: 0;
+        transform: translateY(50px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
 </head>
-<body>
-    <h2>Grad-CAM Visualization</h2>
-    <img src="{{ url_for('static', filename='heatmap/cam_' + filename) }}" alt="Grad-CAM Heatmap" style="max-width: 100%; height: auto;">
-    <br>
-    <a href="/">Back to Home</a>
+<body class="bg-gradient-to-br from-[#dbeafe] via-[#f0f4ff] to-[#fde2e4] min-h-screen flex items-center justify-center px-4">
+
+  <div class="bg-white/60 backdrop-blur-3xl rounded-[2rem] shadow-2xl p-8 md:p-12 w-full max-w-lg text-center fade-in-up border border-white/20">
+    <h2 class="text-4xl font-extrabold text-gray-900 mb-6 leading-snug tracking-tight">
+      Grad-CAM<br>
+      <span class="bg-gradient-to-r from-indigo-500 to-purple-500 bg-clip-text text-transparent">Visualization</span>
+    </h2>
+    
+    <div class="rounded-2xl overflow-hidden shadow-lg mb-8">
+      <img src="{{ url_for('static', filename='heatmap/' + filename) }}" 
+           alt="Grad-CAM Heatmap" 
+           class="w-full h-auto object-cover">
+    </div>
+    
+    <a href="/" 
+       class="inline-flex items-center justify-center gap-2 mt-4 px-7 py-3.5 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-semibold text-lg rounded-full hover:scale-105 active:scale-95 transform transition-all duration-300 shadow-md hover:shadow-2xl">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+      </svg>
+      Back to Home
+    </a>
+  </div>
+
 </body>
 </html>

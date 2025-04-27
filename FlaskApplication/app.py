@@ -14,7 +14,7 @@ from tensorflow.keras.applications.vgg19 import VGG19
 
 base_model = VGG19(include_top=False, input_shape=(128,128,3))
 x = base_model.output
-flat=Flatten()(x)
+flat = Flatten()(x)
 class_1 = Dense(4608, activation='relu')(flat)
 drop_out = Dropout(0.2)(class_1)
 class_2 = Dense(1152, activation='relu')(drop_out)
@@ -57,11 +57,10 @@ def save_and_superimpose_gradcam(img_path, heatmap, cam_path="cam.jpg", alpha=0.
     cv2.imwrite(cam_path, superimposed_img)
 
 def get_className(classNo):
-	if classNo==0:
-		return "Normal"
-	elif classNo==1:
-		return "Pneumonia"
-
+    if classNo == 0:
+        return "Normal"
+    elif classNo == 1:
+        return "Pneumonia"
 
 def getResult(img):
     print("Image path: ", img)
@@ -77,18 +76,17 @@ def getResult(img):
 
     # Grad-CAM
     heatmap = make_gradcam_heatmap(input_img, model_03, last_conv_layer_name="block5_conv4", pred_index=predicted_class)
-    basepath = os.getcwd()  # Define basepath as the current working directory
-    heatmap_folder = os.path.join(basepath, 'static', 'heatmap')  # move to static folder
-    original_filename = os.path.basename(img)
-    name, ext = os.path.splitext(original_filename)
-    cam_filename = f"cam_{name}.jpeg"  # Save as .jpg regardless of original extension
-    cam_path = os.path.join(heatmap_folder, cam_filename)
 
-    os.makedirs(heatmap_folder, exist_ok=True)  # Ensures folder exists
-    # cam_path = os.path.join(heatmap_folder, 'cam.jpg')
+    # Save heatmap
+    basepath = os.getcwd()
+    heatmap_folder = os.path.join(basepath, 'static', 'heatmap')
+    os.makedirs(heatmap_folder, exist_ok=True)
 
+    # Generate a random unique filename for the heatmap
+    unique_filename = str(uuid.uuid4()) + ".jpeg"
+    cam_path = os.path.join(heatmap_folder, unique_filename)
     save_and_superimpose_gradcam(img, heatmap, cam_path)
-
+    print("Heatmap saved at: ", cam_path)
     # Severity
     severity_score = round(pneumonia_prob * 100, 2)
     if severity_score < 40:
@@ -100,29 +98,64 @@ def getResult(img):
 
     return predicted_class, severity_score, severity_level, cam_path
 
-
-
 @app.route('/', methods=['GET'])
 def index():
     return render_template('index.html')
 
+'''@app.route('/predict', methods=['GET', 'POST'])
+def upload():
+    if request.method == 'POST':
+        f = request.files['file']
+
+        basepath = os.path.dirname(__file__)
+        upload_folder = os.path.join(basepath, 'uploads')
+        os.makedirs(upload_folder, exist_ok=True)
+
+        filename = secure_filename(f.filename)
+        file_path = os.path.join(upload_folder, filename)
+        f.save(file_path)
+
+        class_id, severity_score, severity_level, heatmap_path = getResult(file_path)
+        class_name = get_className(class_id)
+
+        heatmap_filename = os.path.basename(heatmap_path)
+
+        # Enable heatmap button for both Normal and Pneumonia classes
+        return {
+            'result': f"{class_name} (Severity Score: {severity_score}%, Level: {severity_level})",
+            'heatmap': heatmap_filename  # Ensure heatmap path is returned for both classes
+        }'''
+    
 @app.route('/predict', methods=['GET', 'POST'])
 def upload():
     if request.method == 'POST':
         f = request.files['file']
 
         basepath = os.path.dirname(__file__)
-        file_path = os.path.join(
-            basepath, 'uploads', secure_filename(f.filename))
+        upload_folder = os.path.join(basepath, 'uploads')
+        os.makedirs(upload_folder, exist_ok=True)
+
+        filename = secure_filename(f.filename)
+        file_path = os.path.join(upload_folder, filename)
         f.save(file_path)
-        print(file_path," saved")
-        class_id, severity_score, severity_level , f= getResult(file_path)
+
+        class_id, severity_score, severity_level, heatmap_path = getResult(file_path)
         class_name = get_className(class_id)
 
+        heatmap_filename = os.path.basename(heatmap_path)
+
+        # Exclude severity and level details for normal images
         if class_name == "Normal":
-            return f"{class_name}"
+            return {
+                'result': f"{class_name}",
+                'heatmap': heatmap_filename  # still return heatmap for Normal images
+            }
         else:
-            return f"{class_name} (Severity Score: {severity_score}%, Level: {severity_level})"
+            return {
+                'result': f"{class_name} (Severity Score: {severity_score}%, Level: {severity_level})",
+                'heatmap': heatmap_filename
+            }
+
 
 @app.route('/show_heatmap/<filename>')
 def show_heatmap(filename):
