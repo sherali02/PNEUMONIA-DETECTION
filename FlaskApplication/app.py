@@ -143,7 +143,7 @@ def upload():
         class_name = get_className(class_id)
 
         heatmap_filename = os.path.basename(heatmap_path)
-
+        
         # Exclude severity and level details for normal images
         if class_name == "Normal":
             return {
@@ -151,6 +151,7 @@ def upload():
                 'heatmap': heatmap_filename  # still return heatmap for Normal images
             }
         else:
+            print(severity_score)
             return {
                 'result': f"{class_name} (Severity Score: {severity_score}%, Level: {severity_level})",
                 'heatmap': heatmap_filename

@@ -54,11 +54,13 @@ $(document).ready(function () {
     function displayResult(message) {
         const resultText = document.getElementById("result-text");
         resultText.innerHTML = ''; // Clear previous
-
         resultText.classList.remove("pneumonia", "normal");
 
         if (message.toLowerCase().includes("pneumonia")) {
             const pneumoniaLine = document.createElement('div');
+            const severityMatch = message.match(/Severity Score: ([\d.]+)%/);
+            const levelMatch = message.match(/Level: (\w+)/);
+
             pneumoniaLine.textContent = "Pneumonia";
             pneumoniaLine.style.fontFamily = "'Inter', sans-serif";
             pneumoniaLine.style.fontWeight = "700";
@@ -66,13 +68,13 @@ $(document).ready(function () {
             pneumoniaLine.style.marginBottom = "10px";
 
             const severityLine = document.createElement('div');
-            severityLine.textContent = "Severity Score: 97.14%";
+            severityLine.textContent = "Severity Score: " + (severityMatch ? severityMatch[1] : "N/A") + "%";
             severityLine.style.fontFamily = "'Courier New', Courier, monospace";
             severityLine.style.color = "#0d47a1"; 
             severityLine.style.fontWeight = "600";
 
             const levelLine = document.createElement('div');
-            levelLine.textContent = "Level: Severe";
+            levelLine.textContent = "Level: " + (levelMatch ? levelMatch[1] : "N/A");
             levelLine.style.fontFamily = "'Courier New', Courier, monospace";
             levelLine.style.color = "#0d47a1"; 
             levelLine.style.fontWeight = "600";
